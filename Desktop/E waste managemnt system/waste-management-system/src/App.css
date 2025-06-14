@@ -24,13 +24,13 @@
   max-width: 1200px;
   margin: 0 auto;
   padding: 1.5rem;
-  display: grid;
-  grid-template-columns: 1fr 1fr;
+  display: flex;
+  flex-direction: column;
   gap: 2rem;
 }
 
+/* Form Sections */
 .form-section {
-  grid-column: 1;
   background-color: white;
   padding: 1.5rem;
   border-radius: 8px;
@@ -38,15 +38,13 @@
 }
 
 .stats-section {
-  grid-column: 2;
   background-color: white;
   padding: 1.5rem;
   border-radius: 8px;
   box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
 }
 
-.records-section {
-  grid-column: 1 / -1;
+.records-section, .schedules-section {
   background-color: white;
   padding: 1.5rem;
   border-radius: 8px;
@@ -61,7 +59,7 @@ h2 {
 }
 
 /* Form Styles */
-.waste-form {
+.waste-form, .schedule-form {
   display: flex;
   flex-direction: column;
   gap: 1rem;
@@ -85,10 +83,19 @@ h2 {
   border: 1px solid #ddd;
   border-radius: 4px;
   font-size: 1rem;
+  transition: border-color 0.3s;
+}
+
+.form-group input:focus,
+.form-group select:focus,
+.form-group textarea:focus {
+  outline: none;
+  border-color: #3498db;
 }
 
 .form-group textarea {
   resize: vertical;
+  min-height: 80px;
 }
 
 .submit-btn {
@@ -101,11 +108,12 @@ h2 {
   font-weight: 600;
   font-size: 1rem;
   margin-top: 0.5rem;
-  transition: background-color 0.2s;
+  transition: all 0.3s;
 }
 
 .submit-btn:hover {
   background-color: #2ecc71;
+  transform: translateY(-2px);
 }
 
 /* Statistics Styles */
@@ -121,6 +129,11 @@ h2 {
   padding: 0.75rem;
   background-color: #f8f9fa;
   border-radius: 4px;
+  transition: transform 0.2s;
+}
+
+.stat-item:hover {
+  transform: translateX(5px);
 }
 
 .stat-label {
@@ -156,14 +169,16 @@ h2 {
   font-weight: 600;
 }
 
-/* Records Table Styles */
+/* Table Styles */
 .records-table {
   overflow-x: auto;
+  margin-top: 1rem;
 }
 
 table {
   width: 100%;
   border-collapse: collapse;
+  min-width: 600px;
 }
 
 th, td {
@@ -176,12 +191,15 @@ th {
   background-color: #f8f9fa;
   font-weight: 600;
   color: #34495e;
+  position: sticky;
+  top: 0;
 }
 
 tr:hover {
   background-color: #f8f9fa;
 }
 
+/* Type Colors */
 .type-recyclable {
   color: #3498db;
   font-weight: 600;
@@ -207,6 +225,12 @@ tr:hover {
   font-weight: 600;
 }
 
+.type-mixed {
+  color: #f39c12;
+  font-weight: 600;
+}
+
+/* Button Styles */
 .delete-btn {
   background-color: #e74c3c;
   color: white;
@@ -215,21 +239,164 @@ tr:hover {
   border-radius: 4px;
   cursor: pointer;
   font-size: 0.9rem;
-  transition: background-color 0.2s;
+  transition: all 0.3s;
 }
 
 .delete-btn:hover {
   background-color: #c0392b;
+  transform: translateY(-1px);
+}
+
+.complete-btn {
+  background-color: #27ae60;
+  color: white;
+  border: none;
+  padding: 0.5rem 0.75rem;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 0.9rem;
+  transition: all 0.3s;
+}
+
+.complete-btn:hover {
+  background-color: #219653;
+  transform: translateY(-1px);
+}
+
+/* Tab Navigation */
+.tabs {
+  display: flex;
+  margin: 1rem auto 0;
+  justify-content: center;
+  gap: 1rem;
+  max-width: 500px;
+  width: 100%;
+}
+
+.tab-btn {
+  padding: 0.75rem 1.5rem;
+  background-color: #34495e;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 1rem;
+  font-weight: 600;
+  transition: all 0.3s ease;
+  flex: 1;
+  text-align: center;
+  max-width: 200px;
+}
+
+.tab-btn:hover {
+  background-color: #2c3e50;
+  transform: translateY(-2px);
+}
+
+.tab-btn.active {
+  background-color: #27ae60;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  transform: translateY(-2px);
+}
+
+/* Status Indicators */
+.status-pending {
+  color: #f39c12;
+  font-weight: 600;
+  background-color: #fff8e1;
+  padding: 0.25rem 0.5rem;
+  border-radius: 4px;
+  display: inline-block;
+}
+
+.status-completed {
+  color: #27ae60;
+  font-weight: 600;
+  background-color: #e8f5e9;
+  padding: 0.25rem 0.5rem;
+  border-radius: 4px;
+  display: inline-block;
+}
+
+/* Overdue Items */
+.overdue {
+  background-color: #ffebee;
+}
+
+.overdue:hover {
+  background-color: #ffcdd2;
+}
+
+/* Action Buttons Container */
+.actions {
+  display: flex;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+}
+
+/* Select Dropdown Styling */
+.schedule-form .form-group select {
+  appearance: none;
+  background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e");
+  background-repeat: no-repeat;
+  background-position: right 0.75rem center;
+  background-size: 1em;
+  padding-right: 2rem;
+}
+
+/* Animations */
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.records-table tr {
+  animation: fadeIn 0.3s ease-out;
 }
 
 /* Responsive Styles */
 @media (max-width: 768px) {
   .container {
-    grid-template-columns: 1fr;
+    padding: 1rem;
+    gap: 1.5rem;
+  }
+  
+  .form-section,
+  .stats-section,
+  .records-section,
+  .schedules-section {
+    padding: 1rem;
   }
 
-  .form-section,
-  .stats-section {
-    grid-column: 1;
+  .tabs {
+    flex-direction: column;
+    align-items: center;
+    gap: 0.5rem;
+  }
+
+  .tab-btn {
+    width: 100%;
+    max-width: none;
+    padding: 0.75rem;
+  }
+
+  table {
+    min-width: 100%;
+  }
+
+  th, td {
+    padding: 0.5rem;
+    font-size: 0.9rem;
+  }
+
+  .actions {
+    flex-direction: column;
+    gap: 0.25rem;
+  }
+
+  .delete-btn,
+  .complete-btn {
+    width: 100%;
+    padding: 0.5rem;
   }
 }
