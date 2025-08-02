@@ -15,49 +15,68 @@ mongoose.connect(process.env.MONGODB_URI || 'mongodb://localhost:27017/wasteDB',
 .then(() => console.log('Connected to MongoDB'))
 .catch(err => console.error('MongoDB connection error:', err));
 
-// Define Schema
+// Define Schema for Simple Waste Records (as requested)
 const wasteSchema = new mongoose.Schema({
-  date: { type: Date, required: true, default: Date.now },
-  collectionPoint: {
-    name: { type: String, required: true },
-    location: {
-      type: { type: String, default: 'Point' },
-      coordinates: { type: [Number], required: true }
-    }
+  date: {
+    type: String,  // Changed to String to store as "24/07/2025" format
+    required: true
   },
-  wasteType: { type: String, enum: ['recyclable', 'organic', 'hazardous', 'electronic'], required: true },
-  weight: { type: Number, required: true }, // in kg
-  volume: Number, // in cubic meters
-  handler: String,
-  status: { type: String, default: 'pending', enum: ['pending', 'processed', 'disposed'] },
-  notes: String
-});
-
-// Add geospatial index
-wasteSchema.index({ 'collectionPoint.location': '2dsphere' });
-
-const WasteRecord = mongoose.model('WasteRecord', wasteSchema);
-
-// API Routes
-app.post('/api/records', async (req, res) => {
-  try {
-    const record = new WasteRecord(req.body);
-    await record.save();
-    res.status(201).json(record);
-  } catch (err) {
-    res.status(400).json({ error: err.message });
+  wasteType: {
+    type: String,
+    required: true,
+    enum: ['Recyclable', 'Organic', 'Hazardous', 'Electronic', 'Other']
+  },
+  amount: {  // Changed from 'weight' to 'amount' as per your request
+    type: Number,
+    required: true,
+    min: 0
+  },
+  location: {
+    type: String,
+    required: true
+  },
+  notes: {
+    type: String,
+    default: ''
+  },
+  createdAt: {
+    type: Date,
+    default: Date.now
   }
 });
 
-app.get('/api/records/daily/:date', async (req, res) => {
-  try {
-    const date = new Date(req.params.date);
-    const nextDay = new Date(date);
-    nextDay.setDate(date.getDate() + 1);
+// Create Model
+const WasteRecord = mongoose.model('WasteRecord', wasteSchema);
 
-    const records = await WasteRecord.find({
-      date: { $gte: date, $lt: nextDay }
+// API Routes
+app.post('/api/waste-records', async (req, res) => {
+  try {
+    // Simple validation
+    if (!req.body.date || !req.body.wasteType || !req.body.amount || !req.body.location) {
+      return res.status(400).json({ error: 'Missing required fields' });
+    }
+
+    const record = new WasteRecord({
+      date: req.body.date, // Storing as "DD/MM/YYYY" string
+      wasteType: req.body.wasteType,
+      amount: parseFloat(req.body.amount),
+      location: req.body.location,
+      notes: req.body.notes || ''
     });
+
+    await record.save();
+    res.status(201).json(record);
+  } catch (err) {
+    res.status(400).json({ 
+      error: 'Failed to save record',
+      details: err.message 
+    });
+  }
+});
+
+app.get('/api/waste-records', async (req, res) => {
+  try {
+    const records = await WasteRecord.find().sort({ createdAt: -1 });
     res.json(records);
   } catch (err) {
     res.status(500).json({ error: err.message });
